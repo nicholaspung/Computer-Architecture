@@ -78,10 +78,24 @@ class CPU:
 
         halted = False
         while not halted:
-            # Instruction Register
+            # Instruction Register, and operand declaration
             IR = self.ram_read(self.pc)
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
+
+            # Check instruction, if we can't hard code instructions
+            # binaryIR = format(IR, '08b')
+
+            # numOfOps = binaryIR[:2]
+            # if numOfOps == '10':
+            #     operand_a = self.ram_read(self.pc + 1)
+            #     operand_b = self.ram_read(self.pc + 2)
+            # elif numOfOps == '01':
+            #     operand_a = self.ram_read(self.pc + 1)
+
+            # aluOP = binaryIR[2]
+            # setPC = binaryIR[3]
+            # instrIdent = binaryIR[4:]
 
             if IR == LDI:
                 self.reg[operand_a] = operand_b
@@ -95,3 +109,6 @@ class CPU:
                 halted = True
 
             self.pc += 1
+
+            if self.pc == 256:
+                self.pc = 0
