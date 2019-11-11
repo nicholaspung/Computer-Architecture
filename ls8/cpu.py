@@ -1,7 +1,6 @@
 """CPU functionality."""
 
 import sys
-import os
 
 class CPU:
     """Main CPU class."""
