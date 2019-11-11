@@ -30,9 +30,15 @@ class CPU:
         ]
 
         for instruction in program:
-            self.ram[address] = instruction
+            self.ram_write(address, instruction)
             address += 1
 
+    def ram_read(self, MAR):
+        MDR = self.ram[MAR]
+        return MDR
+
+    def ram_write(self, MAR, MDR):
+        self.ram[MAR] = MDR
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -72,14 +78,14 @@ class CPU:
 
         halted = False
         while not halted:
-            instruction = self.ram[self.pc]
+            instruction = self.ram_read(self.pc)
 
             if instruction == LDI:
-                self.reg[self.ram[self.pc + 1]] = self.ram[self.pc + 2]
+                self.reg[self.ram_read(self.pc + 1)] = self.ram_read(self.pc + 2)
                 self.pc += 2
 
             if instruction == PRN:
-                print(self.reg[self.ram[self.pc + 1]])
+                print(self.reg[self.ram_read(self.pc + 1)])
                 self.pc += 1
 
             if instruction == HLT:
