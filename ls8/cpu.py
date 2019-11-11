@@ -1,6 +1,7 @@
 """CPU functionality."""
 
 import sys
+import os
 
 class CPU:
     """Main CPU class."""
@@ -17,17 +18,30 @@ class CPU:
 
         address = 0
 
+        # Dynamically opens a .ls8 file, depending on the argv
+        program = []
+
+        rel_file = sys.argv[1]
+        f = open(rel_file)
+        f_lines = f.readlines()
+        for lines in f_lines:
+            if len(lines) == 1:
+                continue
+            if lines[0] == '#':
+                continue
+            program.append(int('0b' + lines[:8], 2))
+
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
         for instruction in program:
             self.ram_write(address, instruction)
@@ -84,18 +98,18 @@ class CPU:
             operand_b = self.ram_read(self.pc + 2)
 
             # Check instruction, if we can't hard code instructions
-            # binaryIR = format(IR, '08b')
+            # binary_IR = format(IR, '08b') # String in binary form
 
-            # numOfOps = binaryIR[:2]
-            # if numOfOps == '10':
+            # num_of_operands = binary_IR[:2] 
+            # if num_of_operands == '10':
             #     operand_a = self.ram_read(self.pc + 1)
             #     operand_b = self.ram_read(self.pc + 2)
-            # elif numOfOps == '01':
+            # elif num_of_operands == '01':
             #     operand_a = self.ram_read(self.pc + 1)
 
-            # aluOP = binaryIR[2]
-            # setPC = binaryIR[3]
-            # instrIdent = binaryIR[4:]
+            # alu_op = binary_IR[2] # If '1' - there's an ALU operation
+            # set_pc = binary_IR[3] # If '1' - we are setting PC
+            # instruction_identifier = binary_IR[4:]
 
             if IR == LDI:
                 self.reg[operand_a] = operand_b
