@@ -124,5 +124,6 @@ class CPU:
 
             self.pc += 1
 
+            # If pc == 256, reset pc
             if self.pc == 256:
                 self.pc = 0
