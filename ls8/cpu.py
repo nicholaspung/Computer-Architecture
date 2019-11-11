@@ -78,17 +78,20 @@ class CPU:
 
         halted = False
         while not halted:
-            instruction = self.ram_read(self.pc)
+            # Instruction Register
+            IR = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
 
-            if instruction == LDI:
-                self.reg[self.ram_read(self.pc + 1)] = self.ram_read(self.pc + 2)
+            if IR == LDI:
+                self.reg[operand_a] = operand_b
                 self.pc += 2
 
-            if instruction == PRN:
-                print(self.reg[self.ram_read(self.pc + 1)])
+            if IR == PRN:
+                print(self.reg[operand_a])
                 self.pc += 1
 
-            if instruction == HLT:
+            if IR == HLT:
                 halted = True
 
             self.pc += 1
