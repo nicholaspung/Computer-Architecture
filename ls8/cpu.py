@@ -72,15 +72,17 @@ class CPU:
 
         halted = False
         while not halted:
-            instruction = self.ram[pc]
+            instruction = self.ram[self.pc]
 
             if instruction == LDI:
-                self.reg[self.ram[pc + 1]] = self.ram[pc + 2]
+                self.reg[self.ram[self.pc + 1]] = self.ram[self.pc + 2]
                 self.pc += 2
 
             if instruction == PRN:
-                print(self.reg[self.ram[pc + 1]])
+                print(self.reg[self.ram[self.pc + 1]])
                 self.pc += 1
 
             if instruction == HLT:
                 halted = True
+
+            self.pc += 1
