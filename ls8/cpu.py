@@ -10,24 +10,6 @@ class BranchTable:
         self.branchtable['HLT'] = self.handle_hlt
         self.branchtable['MUL'] = self.handle_mul
 
-    def handle_ldi(self, pc, reg, op1, op2):
-        reg[op1] = op2
-        pc += 2
-
-    def handle_prn(self, pc, reg, op1):
-        print(reg[op1])
-        pc += 1
-
-    def handle_hlt(self, halt):
-        halt = True
-
-    def handle_mul(self, pc, alu_func, op1, op2):
-        alu_func('MUL', op1, op2)
-        pc += 2
-
-    def run(self, ir):
-        self.branchtable[ir]("foo")
-
 class CPU:
     """Main CPU class."""
 
@@ -74,9 +56,9 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
+        if op == 0b0000: # "ADD"
             self.reg[reg_a] += self.reg[reg_b]
-        elif op == "MUL":
+        elif op == 0b0010: # "MUL"
             self.reg[reg_a] *= self.reg[reg_b]
         #elif op == "SUB": etc
         else:
@@ -114,36 +96,31 @@ class CPU:
         while not halted:
             # Instruction Register, and operand declaration
             IR = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
 
             # --- Bitwise operators ---
             num_of_operands = IR >> 6 
-            if num_of_operands == 0b10: 
-                operand_a = self.ram_read(self.pc + 1)
-                operand_b = self.ram_read(self.pc + 2)
-            elif num_of_operands == 0b00: 
-                operand_a = self.ram_read(self.pc + 1)
-
             alu_op = (IR & 0b00100000) >> 5 # If '1' - there's an ALU operation
             set_pc = (IR & 0b00010000) >> 4 # If '1' - we are setting PC
             instruction_identifier = IR & 0b00001111
 
-            if IR == LDI:
-                self.reg[operand_a] = operand_b
-                self.pc += 2
+            if alu_op == 0b1:
+                self.alu(instruction_identifier, operand_a, operand_b)
+            elif set_pc == 0b1:
+                pass
+            else:
+                if IR == LDI:
+                    self.reg[operand_a] = operand_b
 
-            if IR == PRN:
-                print(self.reg[operand_a])
-                self.pc += 1
+                if IR == PRN:
+                    print(self.reg[operand_a])
 
-            if IR == HLT:
-                halted = True
+                if IR == HLT:
+                    halted = True
 
-            if IR == MUL:
-                self.alu('MUL', operand_a, operand_b)
-                self.pc += 2
-
-            self.pc += 1
+            self.pc += num_of_operands + 1
 
             # If pc == 256, reset pc
-            if self.pc == 256:
+            if self.pc >= 256:
                 self.pc = 0
