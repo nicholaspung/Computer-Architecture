@@ -58,6 +58,8 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -88,6 +90,7 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         HLT = 0b00000001
+        MUL = 0b10100010
 
         halted = False
         while not halted:
@@ -100,10 +103,10 @@ class CPU:
             # binary_IR = format(IR, '08b') # String in binary form
 
             # num_of_operands = binary_IR[:2] 
-            # if num_of_operands == '10':
+            # if num_of_operands == '10': # bit-shift to right by 6, if 1 then
             #     operand_a = self.ram_read(self.pc + 1)
             #     operand_b = self.ram_read(self.pc + 2)
-            # elif num_of_operands == '01':
+            # elif num_of_operands == '01': # bit-shift to right by 6, if 0 then
             #     operand_a = self.ram_read(self.pc + 1)
 
             # alu_op = binary_IR[2] # If '1' - there's an ALU operation
@@ -120,6 +123,10 @@ class CPU:
 
             if IR == HLT:
                 halted = True
+
+            if IR == MUL:
+                self.alu('MUL', operand_a, operand_b)
+                self.pc += 2
 
             self.pc += 1
 
