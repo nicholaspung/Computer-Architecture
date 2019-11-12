@@ -2,6 +2,32 @@
 
 import sys
 
+class BranchTable:
+    def __init__(self):
+        self.branchtable = {}
+        self.branchtable['LDI'] = self.handle_ldi
+        self.branchtable['PRN'] = self.handle_prn
+        self.branchtable['HLT'] = self.handle_hlt
+        self.branchtable['MUL'] = self.handle_mul
+
+    def handle_ldi(self, pc, reg, op1, op2):
+        reg[op1] = op2
+        pc += 2
+
+    def handle_prn(self, pc, reg, op1):
+        print(reg[op1])
+        pc += 1
+
+    def handle_hlt(self, halt):
+        halt = True
+
+    def handle_mul(self, pc, alu_func, op1, op2):
+        alu_func('MUL', op1, op2)
+        pc += 2
+
+    def run(self, ir):
+        self.branchtable[ir]("foo")
+
 class CPU:
     """Main CPU class."""
 
@@ -112,6 +138,8 @@ class CPU:
             # alu_op = binary_IR[2] # If '1' - there's an ALU operation
             # set_pc = binary_IR[3] # If '1' - we are setting PC
             # instruction_identifier = binary_IR[4:]
+
+            # branchtable[IR]
 
             if IR == LDI:
                 self.reg[operand_a] = operand_b
