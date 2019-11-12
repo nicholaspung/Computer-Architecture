@@ -15,6 +15,17 @@ class CPU:
             0b0000: self.handle_add,
             0b0010: self.handle_mul
         }
+        self.pc_dispatch = {}
+        self.op_dispatch = {
+            0b0010: self.handle_ldi,
+            0b0111: self.handle_prn
+        }
+
+    def handle_ldi(self, op1, op2):
+        self.reg[op1] = op2
+
+    def handle_prn(self, op1):
+        print(self.reg[op1])
 
     def handle_add(self, reg_a, reg_b):
         self.reg[reg_a] += self.reg[reg_b]
@@ -58,8 +69,14 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if self.alu_dispatch[op]:
-            self.alu_dispatch[op](reg_a, reg_b)
+        num_of_operands = op >> 6
+        op_ii = op & 0b00001111
+
+        if self.alu_dispatch[op_ii]:
+            if num_of_operands == 0b01:
+                self.alu_dispatch[op_ii](reg_a)
+            else:
+                self.alu_dispatch[op_ii](reg_a, reg_b)
         # if op == 0b0000: # "ADD"
         #     self.reg[reg_a] += self.reg[reg_b]
         # elif op == 0b0010: # "MUL"
@@ -109,18 +126,24 @@ class CPU:
             instruction_identifier = IR & 0b00001111
 
             if alu_op == 0b1:
-                self.alu(instruction_identifier, operand_a, operand_b)
+                self.alu(IR, operand_a, operand_b)
             elif set_pc == 0b1:
                 pass
             else:
-                if IR == LDI:
-                    self.reg[operand_a] = operand_b
-
-                if IR == PRN:
-                    print(self.reg[operand_a])
-
-                if IR == HLT:
+                if instruction_identifier == 0b1 and alu_op == 0b0 and set_pc == 0b0:
                     halted = True
+                else:
+                    if num_of_operands == 0b01:
+                        self.op_dispatch[instruction_identifier](operand_a)
+                    elif num_of_operands == 0b10:
+                        self.op_dispatch[instruction_identifier](operand_a, operand_b)
+                    else:
+                        self.op_dispatch[instruction_identifier]()
+                # if IR == LDI:
+                #     self.reg[operand_a] = operand_b
+
+                # if IR == PRN:
+                #     print(self.reg[operand_a])
 
             self.pc += num_of_operands + 1
 
