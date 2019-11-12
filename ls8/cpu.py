@@ -2,14 +2,6 @@
 
 import sys
 
-class BranchTable:
-    def __init__(self):
-        self.branchtable = {}
-        self.branchtable['LDI'] = self.handle_ldi
-        self.branchtable['PRN'] = self.handle_prn
-        self.branchtable['HLT'] = self.handle_hlt
-        self.branchtable['MUL'] = self.handle_mul
-
 class CPU:
     """Main CPU class."""
 
@@ -19,6 +11,16 @@ class CPU:
         self.reg = [0] * 7 + [0xF4]
         self.pc = 0
         self.fl = 0
+        self.alu_dispatch = {
+            0b0000: self.handle_add,
+            0b0010: self.handle_mul
+        }
+
+    def handle_add(self, reg_a, reg_b):
+        self.reg[reg_a] += self.reg[reg_b]
+
+    def handle_mul(self, reg_a, reg_b):
+        self.reg[reg_a] *= self.reg[reg_b]
 
     def load(self):
         """Load a program into memory."""
@@ -56,11 +58,13 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == 0b0000: # "ADD"
-            self.reg[reg_a] += self.reg[reg_b]
-        elif op == 0b0010: # "MUL"
-            self.reg[reg_a] *= self.reg[reg_b]
-        #elif op == "SUB": etc
+        if self.alu_dispatch[op]:
+            self.alu_dispatch[op](reg_a, reg_b)
+        # if op == 0b0000: # "ADD"
+        #     self.reg[reg_a] += self.reg[reg_b]
+        # elif op == 0b0010: # "MUL"
+        #     self.reg[reg_a] *= self.reg[reg_b]
+        # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -90,7 +94,6 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         HLT = 0b00000001
-        MUL = 0b10100010
 
         halted = False
         while not halted:
