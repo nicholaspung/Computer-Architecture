@@ -107,10 +107,6 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # Hard coding instructions
-        LDI = 0b10000010
-        PRN = 0b01000111
-        HLT = 0b00000001
 
         halted = False
         while not halted:
@@ -125,6 +121,8 @@ class CPU:
             set_pc = (IR & 0b00010000) >> 4 # If '1' - we are setting PC
             instruction_identifier = IR & 0b00001111
 
+            # Can create a dispatch table with all the codes
+            # Then depending
             if alu_op == 0b1:
                 self.alu(IR, operand_a, operand_b)
             elif set_pc == 0b1:
