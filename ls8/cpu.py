@@ -56,18 +56,6 @@ class CPU:
                 continue
             program.append(int('0b' + lines[:8], 2))
 
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
-
         for instruction in program:
             self.ram_write(address, instruction)
             address += 1
@@ -122,24 +110,20 @@ class CPU:
         while not halted:
             # Instruction Register, and operand declaration
             IR = self.ram_read(self.pc)
-            operand_a = self.ram_read(self.pc + 1)
-            operand_b = self.ram_read(self.pc + 2)
+            # operand_a = self.ram_read(self.pc + 1)
+            # operand_b = self.ram_read(self.pc + 2)
 
-            # Check instruction, if we can't hard code instructions
-            # binary_IR = format(IR, '08b') # String in binary form
+            # --- Bitwise operators ---
+            num_of_operands = IR >> 6 
+            if num_of_operands == 0b10: 
+                operand_a = self.ram_read(self.pc + 1)
+                operand_b = self.ram_read(self.pc + 2)
+            elif num_of_operands == 0b00: 
+                operand_a = self.ram_read(self.pc + 1)
 
-            # num_of_operands = binary_IR[:2] 
-            # if num_of_operands == '10': # bit-shift to right by 6, if 1 then
-            #     operand_a = self.ram_read(self.pc + 1)
-            #     operand_b = self.ram_read(self.pc + 2)
-            # elif num_of_operands == '01': # bit-shift to right by 6, if 0 then
-            #     operand_a = self.ram_read(self.pc + 1)
-
-            # alu_op = binary_IR[2] # If '1' - there's an ALU operation
-            # set_pc = binary_IR[3] # If '1' - we are setting PC
-            # instruction_identifier = binary_IR[4:]
-
-            # branchtable[IR]
+            alu_op = (IR & 0b00100000) >> 5 # If '1' - there's an ALU operation
+            set_pc = (IR & 0b00010000) >> 4 # If '1' - we are setting PC
+            instruction_identifier = IR & 0b00001111
 
             if IR == LDI:
                 self.reg[operand_a] = operand_b
