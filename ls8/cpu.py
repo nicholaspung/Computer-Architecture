@@ -41,6 +41,10 @@ class CPU:
     def load(self):
         """Load a program into memory."""
 
+        if len(sys.argv) != 2:
+            print("Usage: comp.py filename")
+            sys.exit(1)
+
         address = 0
 
         # Dynamically opens a .ls8 file, depending on the argv
@@ -110,8 +114,6 @@ class CPU:
         while not halted:
             # Instruction Register, and operand declaration
             IR = self.ram_read(self.pc)
-            # operand_a = self.ram_read(self.pc + 1)
-            # operand_b = self.ram_read(self.pc + 2)
 
             # --- Bitwise operators ---
             num_of_operands = IR >> 6 
