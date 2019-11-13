@@ -3,6 +3,7 @@
 import sys
 
 SP = 7
+STACK_START = 0xF4
 
 class CPU:
     """Main CPU class."""
@@ -11,7 +12,7 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.reg = [0] * 8
-        self.reg[SP] = 0xF4 # SP
+        self.reg[SP] = STACK_START # SP
         self.pc = 0
         self.fl = 0
         self.alu_dispatch = {
@@ -27,6 +28,10 @@ class CPU:
         }
 
     def handle_push(self, reg_value):
+        if self.reg[SP] == 0:
+            print("Stack Overflow, stopping CPU.")
+            return
+
         # Decrement SP
         self.reg[SP] -= 1
 
@@ -39,6 +44,11 @@ class CPU:
 
         # Increment SP
         self.reg[SP] += 1
+
+        # If at bottom of stack, resets stack back to start
+        if self.reg[SP] > STACK_START:
+            print("Stack underflow, resetting stack.")
+            self.reg[SP] = STACK_START
 
     def handle_ldi(self, op1, op2):
         self.reg[op1] = op2
