@@ -2,6 +2,8 @@
 
 import sys
 
+SP = 7
+
 class CPU:
     """Main CPU class."""
 
@@ -9,7 +11,7 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.reg = [0] * 8
-        self.reg[7] = 0xF4
+        self.reg[SP] = 0xF4 # SP
         self.pc = 0
         self.fl = 0
         self.alu_dispatch = {
@@ -24,11 +26,19 @@ class CPU:
             0b0110: self.handle_pop
         }
 
-    def handle_push(self, reg):
-        pass
+    def handle_push(self, reg_value):
+        # Decrement SP
+        self.reg[SP] -= 1
 
-    def handle_pop(self, reg):
-        pass
+        # Get address pointed by SP, copy given reg value into address
+        self.ram[self.reg[SP]] = self.reg[reg_value]
+
+    def handle_pop(self, reg_value):
+        # Get value from SP, save to given reg value
+        self.reg[reg_value] = self.ram[self.reg[SP]]
+
+        # Increment SP
+        self.reg[SP] += 1
 
     def handle_ldi(self, op1, op2):
         self.reg[op1] = op2
