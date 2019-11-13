@@ -8,7 +8,8 @@ class CPU:
     def __init__(self):
         """Construct a new CPU."""
         self.ram = [0] * 256
-        self.reg = [0] * 7 + [0xF4]
+        self.reg = [0] * 8
+        self.reg[7] = 0xF4
         self.pc = 0
         self.fl = 0
         self.alu_dispatch = {
@@ -18,8 +19,16 @@ class CPU:
         self.pc_dispatch = {}
         self.op_dispatch = {
             0b0010: self.handle_ldi,
-            0b0111: self.handle_prn
+            0b0111: self.handle_prn,
+            0b0101: self.handle_push,
+            0b0110: self.handle_pop
         }
+
+    def handle_push(self, reg):
+        pass
+
+    def handle_pop(self, reg):
+        pass
 
     def handle_ldi(self, op1, op2):
         self.reg[op1] = op2
