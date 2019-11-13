@@ -106,18 +106,13 @@ class CPU:
         """ALU operations."""
 
         num_of_operands = op >> 6
-        op_ii = op & 0b00001111
+        instruction_identifier_alu = op & 0b00001111
 
-        if self.alu_dispatch[op_ii]:
+        if self.alu_dispatch[instruction_identifier_alu]:
             if num_of_operands == 0b01:
-                self.alu_dispatch[op_ii](reg_a)
+                self.alu_dispatch[instruction_identifier_alu](reg_a)
             else:
-                self.alu_dispatch[op_ii](reg_a, reg_b)
-        # if op == 0b0000: # "ADD"
-        #     self.reg[reg_a] += self.reg[reg_b]
-        # elif op == 0b0010: # "MUL"
-        #     self.reg[reg_a] *= self.reg[reg_b]
-        # elif op == "SUB": etc
+                self.alu_dispatch[instruction_identifier_alu](reg_a, reg_b)
         else:
             raise Exception("Unsupported ALU operation")
 
