@@ -27,9 +27,15 @@ class CPU:
             0b0110: self.handle_pop
         }
 
+    def handle_hlt(self):
+        raise Exception
+
     def handle_push(self, reg_value):
+        # If at top of stack, 
         if self.reg[SP] == 0:
             print("Stack Overflow, stopping CPU.")
+            # Should create a HLT function to stop program
+            self.handle_hlt()
             return
 
         # Decrement SP
@@ -137,43 +143,45 @@ class CPU:
     def run(self):
         """Run the CPU."""
 
-        halted = False
-        while not halted:
-            # Instruction Register, and operand declaration
-            IR = self.ram_read(self.pc)
-            operand_a = self.ram_read(self.pc + 1)
-            operand_b = self.ram_read(self.pc + 2)
+        try:
+            while True:
+                # Instruction Register, and operand declaration
+                IR = self.ram_read(self.pc)
+                operand_a = self.ram_read(self.pc + 1)
+                operand_b = self.ram_read(self.pc + 2)
 
-            # --- Bitwise operators ---
-            num_of_operands = IR >> 6 
-            alu_op = (IR & 0b00100000) >> 5 # If '1' - there's an ALU operation
-            set_pc = (IR & 0b00010000) >> 4 # If '1' - we are setting PC
-            instruction_identifier = IR & 0b00001111
+                # --- Bitwise operators ---
+                num_of_operands = IR >> 6 
+                alu_op = (IR & 0b00100000) >> 5 # If '1' - there's an ALU operation
+                set_pc = (IR & 0b00010000) >> 4 # If '1' - we are setting PC
+                instruction_identifier = IR & 0b00001111
 
-            # Can create a dispatch table with all the codes
-            # Then depending
-            if alu_op == 0b1:
-                self.alu(IR, operand_a, operand_b)
-            elif set_pc == 0b1:
-                pass
-            else:
-                if instruction_identifier == 0b1 and alu_op == 0b0 and set_pc == 0b0:
-                    halted = True
+                # Can create a dispatch table with all the codes
+                # Then depending
+                if alu_op == 0b1:
+                    self.alu(IR, operand_a, operand_b)
+                elif set_pc == 0b1:
+                    pass
                 else:
-                    if num_of_operands == 0b01:
-                        self.op_dispatch[instruction_identifier](operand_a)
-                    elif num_of_operands == 0b10:
-                        self.op_dispatch[instruction_identifier](operand_a, operand_b)
+                    if instruction_identifier == 0b1 and alu_op == 0b0 and set_pc == 0b0: # HLT = 0b00000001
+                        self.handle_hlt()
                     else:
-                        self.op_dispatch[instruction_identifier]()
-                # if IR == LDI:
-                #     self.reg[operand_a] = operand_b
+                        if num_of_operands == 0b01:
+                            self.op_dispatch[instruction_identifier](operand_a)
+                        elif num_of_operands == 0b10:
+                            self.op_dispatch[instruction_identifier](operand_a, operand_b)
+                        else:
+                            self.op_dispatch[instruction_identifier]()
+                    # if IR == LDI:
+                    #     self.reg[operand_a] = operand_b
 
-                # if IR == PRN:
-                #     print(self.reg[operand_a])
+                    # if IR == PRN:
+                    #     print(self.reg[operand_a])
 
-            self.pc += num_of_operands + 1
+                self.pc += num_of_operands + 1
 
-            # If pc == 256, reset pc
-            if self.pc >= 256:
-                self.pc = 0
+                # If pc == 256, reset pc
+                if self.pc >= 256:
+                    self.pc = 0
+        except Exception:
+            pass
