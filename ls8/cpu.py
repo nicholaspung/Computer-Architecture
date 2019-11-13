@@ -24,7 +24,8 @@ class CPU:
             0b0010: self.handle_ldi,
             0b0111: self.handle_prn,
             0b0101: self.handle_push,
-            0b0110: self.handle_pop
+            0b0110: self.handle_pop,
+            0b0001: self.handle_hlt
         }
 
     def handle_hlt(self):
@@ -156,27 +157,18 @@ class CPU:
                 set_pc = (IR & 0b00010000) >> 4 # If '1' - we are setting PC
                 instruction_identifier = IR & 0b00001111
 
-                # Can create a dispatch table with all the codes
-                # Then depending
+                # Accesses dispatch tables, passes in correct number of arguments in each
                 if alu_op == 0b1:
                     self.alu(IR, operand_a, operand_b)
                 elif set_pc == 0b1:
                     pass
                 else:
-                    if instruction_identifier == 0b1 and alu_op == 0b0 and set_pc == 0b0: # HLT = 0b00000001
-                        self.handle_hlt()
+                    if num_of_operands == 0b01:
+                        self.op_dispatch[instruction_identifier](operand_a)
+                    elif num_of_operands == 0b10:
+                        self.op_dispatch[instruction_identifier](operand_a, operand_b)
                     else:
-                        if num_of_operands == 0b01:
-                            self.op_dispatch[instruction_identifier](operand_a)
-                        elif num_of_operands == 0b10:
-                            self.op_dispatch[instruction_identifier](operand_a, operand_b)
-                        else:
-                            self.op_dispatch[instruction_identifier]()
-                    # if IR == LDI:
-                    #     self.reg[operand_a] = operand_b
-
-                    # if IR == PRN:
-                    #     print(self.reg[operand_a])
+                        self.op_dispatch[instruction_identifier]()
 
                 self.pc += num_of_operands + 1
 
