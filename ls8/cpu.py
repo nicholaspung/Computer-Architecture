@@ -19,7 +19,10 @@ class CPU:
             0b0000: self.handle_add,
             0b0010: self.handle_mul
         }
-        self.pc_dispatch = {}
+        self.pc_dispatch = {
+            0b0000: self.handle_call,
+            0b0001: self.handle_ret
+        }
         self.op_dispatch = {
             0b0010: self.handle_ldi,
             0b0111: self.handle_prn,
@@ -28,14 +31,25 @@ class CPU:
             0b0001: self.handle_hlt
         }
 
+    def handle_call(self, reg_value):
+        # Hard coding 2nd operand - instruction directly after CALL
+        self.handle_push(self.pc + 2)
+
+        self.pc = self.reg[reg_value]
+
+    def handle_ret(self):
+        # Pops SP and makes self.reg[SP] = next instruction after subroutine
+        self.handle_pop(SP)
+
+        self.pc = self.reg[SP]
+
     def handle_hlt(self):
         raise Exception
 
     def handle_push(self, reg_value):
-        # If at top of stack, 
+        # If at top of stack, stop CPU
         if self.reg[SP] == 0:
             print("Stack Overflow, stopping CPU.")
-            # Should create a HLT function to stop program
             self.handle_hlt()
             return
 
@@ -43,11 +57,11 @@ class CPU:
         self.reg[SP] -= 1
 
         # Get address pointed by SP, copy given reg value into address
-        self.ram[self.reg[SP]] = self.reg[reg_value]
+        self.ram_write(self.reg[SP], self.reg[reg_value])
 
     def handle_pop(self, reg_value):
         # Get value from SP, save to given reg value
-        self.reg[reg_value] = self.ram[self.reg[SP]]
+        self.reg[reg_value] = self.ram_read(self.reg[SP])
 
         # Increment SP
         self.reg[SP] += 1
@@ -84,6 +98,8 @@ class CPU:
         rel_file = sys.argv[1]
         f = open(rel_file)
         f_lines = f.readlines()
+
+        # Can have a better implementation of cleaning up lines
         for lines in f_lines:
             if len(lines) == 1:
                 continue
@@ -104,6 +120,7 @@ class CPU:
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
+        print('alu')
 
         num_of_operands = op >> 6
         instruction_identifier_alu = op & 0b00001111
@@ -153,22 +170,25 @@ class CPU:
                 instruction_identifier = IR & 0b00001111
 
                 # Accesses dispatch tables, passes in correct number of arguments in each
-                if alu_op == 0b1:
-                    self.alu(IR, operand_a, operand_b)
-                elif set_pc == 0b1:
-                    pass
-                else:
+                if set_pc == 0b1:
                     if num_of_operands == 0b01:
-                        self.op_dispatch[instruction_identifier](operand_a)
-                    elif num_of_operands == 0b10:
-                        self.op_dispatch[instruction_identifier](operand_a, operand_b)
+                        self.pc_dispatch[instruction_identifier](operand_a)
                     else:
-                        self.op_dispatch[instruction_identifier]()
+                        self.pc_dispatch[instruction_identifier]()
+                else:
+                    if alu_op == 0b1:
+                        self.alu(IR, operand_a, operand_b)
+                    else:
+                        if num_of_operands == 0b01:
+                            self.op_dispatch[instruction_identifier](operand_a)
+                        elif num_of_operands == 0b10:
+                            self.op_dispatch[instruction_identifier](operand_a, operand_b)
+                        else:
+                            self.op_dispatch[instruction_identifier]()
 
-                self.pc += num_of_operands + 1
-
-                # If pc == 256, reset pc
-                if self.pc >= 256:
-                    self.pc = 0
+                    self.pc += num_of_operands + 1
+                    # If pc == 256, reset pc
+                    if self.pc >= 256:
+                        self.pc = 0
         except Exception:
             pass
