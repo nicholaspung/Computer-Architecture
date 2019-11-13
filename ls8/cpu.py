@@ -57,9 +57,10 @@ class CPU:
         self.reg[SP] -= 1
 
         # Get address pointed by SP, copy given reg value into address
-        self.ram_write(self.reg[SP], self.reg[reg_value])
+        self.ram_write(self.reg[SP], reg_value)
 
     def handle_pop(self, reg_value):
+        # Need to fix this
         # Get value from SP, save to given reg value
         self.reg[reg_value] = self.ram_read(self.reg[SP])
 
