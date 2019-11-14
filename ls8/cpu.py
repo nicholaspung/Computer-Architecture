@@ -33,20 +33,20 @@ class CPU:
 
     def handle_call(self, reg_value):
         # Hard coding 2nd operand - instruction directly after CALL
-        self.handle_push(self.pc + 2)
+        self.handle_push()
 
         self.pc = self.reg[reg_value]
 
     def handle_ret(self):
         # Pops SP and makes self.reg[SP] = next instruction after subroutine
-        self.handle_pop(SP)
+        popped_value = self.handle_pop()
 
-        self.pc = self.reg[SP]
+        self.pc = popped_value
 
     def handle_hlt(self):
         raise Exception
 
-    def handle_push(self, reg_value):
+    def handle_push(self, reg_value=None):
         # If at top of stack, stop CPU
         if self.reg[SP] == 0:
             print("Stack Overflow, stopping CPU.")
@@ -56,21 +56,31 @@ class CPU:
         # Decrement SP
         self.reg[SP] -= 1
 
-        # Get address pointed by SP, copy given reg value into address
-        self.ram_write(self.reg[SP], reg_value)
+        if reg_value is not None:
+            # Get address pointed by SP, copy given reg value into address
+            self.ram_write(self.reg[SP], self.reg[reg_value])
+        else:
+            self.ram_write(self.reg[SP], self.pc + 2)
 
-    def handle_pop(self, reg_value):
+    def handle_pop(self, reg_value=None):
         # Need to fix this
         # Get value from SP, save to given reg value
-        self.reg[reg_value] = self.ram_read(self.reg[SP])
+        if reg_value is not None:
+            self.reg[reg_value] = self.ram_read(self.reg[SP])
 
-        # Increment SP
-        self.reg[SP] += 1
+            # Increment SP
+            self.reg[SP] += 1
 
-        # If at bottom of stack, resets stack back to start
-        if self.reg[SP] > STACK_START:
-            print("Stack underflow, resetting stack.")
-            self.reg[SP] = STACK_START
+            # If at bottom of stack, resets stack back to start
+            if self.reg[SP] > STACK_START:
+                print("Stack underflow, resetting stack.")
+                self.reg[SP] = STACK_START
+
+            return self.reg[reg_value]
+        else:
+            popped_value = self.ram_read(self.reg[SP])
+
+            return popped_value
 
     def handle_ldi(self, op1, op2):
         self.reg[op1] = op2
@@ -121,7 +131,6 @@ class CPU:
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-        print('alu')
 
         num_of_operands = op >> 6
         instruction_identifier_alu = op & 0b00001111
